@@ -1,5 +1,4 @@
-
-from github import Github
+from github import Github, UnknownObjectException
 from config import config as cfg
 
 # Configuration
@@ -15,19 +14,26 @@ g = Github(cfg["token"])
 # Get the repository
 repo = g.get_repo(REPO_NAME)
 
-# Get the file
-file = repo.get_contents(FILE_PATH)
-content = file.decoded_content.decode("utf-8")
+try:
+    # Try to get the file
+    file = repo.get_contents(FILE_PATH, ref="main")
+    content = file.decoded_content.decode("utf-8")
+    updated_content = content.replace(OLD_TEXT, NEW_TEXT)
 
-# Replace text
-updated_content = content.replace(OLD_TEXT, NEW_TEXT)
+    # Update the file
+    repo.update_file(
+        path=FILE_PATH,
+        message=COMMIT_MESSAGE,
+        content=updated_content,
+        sha=file.sha
+    )
+except UnknownObjectException:
+    # File does not exist → create it
+    updated_content = NEW_TEXT
+    repo.create_file(
+        path=FILE_PATH,
+        message=COMMIT_MESSAGE,
+        content=updated_content
+    )
 
-# Update the file in the repository
-repo.update_file(
-    path=FILE_PATH,
-    message=COMMIT_MESSAGE,
-    content=updated_content,
-    sha=file.sha
-)
-
-print("File updated and pushed using GitHub API.")
+print("File updated and pushed on GitHub.")
