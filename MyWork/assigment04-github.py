@@ -9,7 +9,6 @@ COMMIT_MESSAGE = "Replace Andrew with Ignacio"
 
 g = Github(cfg["token"])
 repo = g.get_repo(REPO_NAME)
-print("Repo permissions:", repo.permissions)
 
 file = repo.get_contents(FILE_PATH, ref=repo.default_branch)
 content = file.decoded_content.decode("utf-8")
